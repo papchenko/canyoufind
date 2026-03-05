@@ -1,0 +1,120 @@
+.collections {
+  width: 100%;
+  background-image: url('../../../assets/bg.png');
+  background-size: cover;
+  background-position: bottom;
+  background-repeat: no-repeat;
+
+  button {
+    color: var(--primary-color);
+    background-color: transparent;
+    font-size: 1rem;
+    border: none;
+    font-weight: 600;
+    padding-bottom: 3px;
+    transition: var(--trns-05);
+    border-bottom: 1px solid var(--primary-color);
+    cursor: pointer;
+
+    i {
+      color: var(--primary-color);
+      padding-left: 5px;
+    }
+  }
+}
+
+.swiper {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  &-slide {
+    h2 {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: top;
+    }
+  }
+  
+  &-button-next:after,
+  &-button-prev:after,
+  &-rtl .swiper-button-next::after,
+  &-rtl .swiper-button-prev::after {
+    display: none;
+  }
+}
+
+.slide-img {
+  width: 90%;
+  height: 350px;
+  border-radius: 20px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+  }
+}
+
+#swiperbtn {
+  position: absolute;
+  right: 0;
+  top: 10%;
+  font-size: 30px;
+  background-color: var(--primary-color);
+  padding: 8px;
+  border-radius: 5px;
+  color: #131325;
+  font-weight: 900;
+  opacity: 0.7;
+}
+
+.prev__btn {
+  position: absolute;
+  left: 85%;
+  margin-left: -10px;
+}
+.shop-under-development {
+  background-color: #ffffff1a;
+  border-radius: 8px;
+  padding: 10px;
+  color: #70e000;
+}
+
+// buy button
+.slide-img {
+  position: relative;
+
+  .buy-btn {
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--primary-color);
+      opacity: 0.7;
+      transform: translateX(-50%) scale(1.05);
+    }
+  }
+}

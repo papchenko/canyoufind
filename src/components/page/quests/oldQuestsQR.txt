@@ -1,0 +1,778 @@
+import { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { auth, db } from '../../../../firebase';
+import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import useCoinUnlock from "../hooks/useCoinUnlock";
+
+import questOneIcon from '../../../../assets/quest1-icon.png';
+
+import Maps from '../../../data/Maps.json';
+
+import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+import { HiPlusSm } from "react-icons/hi";
+import { HiMinusSm } from "react-icons/hi";
+
+import useProximityToast from "../hooks/useProximityToast";
+
+import '../quests.scss';
+
+const AutoResizeMap = ({ mapRef }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (mapRef.current) {
+      setTimeout(() => map.invalidateSize(), 200);
+    }
+  }, [map, mapRef]);
+  return null;
+};
+
+// custom user icon
+const userIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149060.png',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+});
+
+const QuestOne = ({ onSuccess }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [codeInput, setCodeInput] = useState('');
+  const [userLocation, setUserLocation] = useState(null);
+  const correctCode = 'CYF09SDG11';
+
+  const { coins, unlockWithCoins } = useCoinUnlock();
+  const mapRef = useRef(null);
+
+  // NEW: refs for stable geolocation & one-time centering
+  const watchIdRef = useRef(null);
+  const hasCenteredRef = useRef(false);
+
+  const tabs = [
+    { 
+      title: 'Map with approximate coordinates', 
+      img: questOneIcon, 
+      mapUrl: Maps[0].map1 
+    },
+    { 
+      title: 'Secret location description, clues, etc.', 
+      img: questOneIcon, 
+      text: {
+        one: 'Stadium. The large stadium can also serve as a guide.',
+        two: 'Review wheel. A landmark is a Ferris wheel located near a secret place.'
+      }
+    }
+  ];
+
+  // const secretPlace = { lat: 50.90139562703033, lng: 34.80155871292211, radius: 150 };
+  const secretPlace = { lat: 50.90394949092361, lng: 34.83413472243916, radius: 200 };
+  useProximityToast(secretPlace, "You’ve entered the secret zone. The secret place 1 is somewhere nearby!");
+  
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+
+    hasCenteredRef.current = false;
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+        setUserLocation(pos);
+
+        // center only once to avoid constant jumps
+        if (!hasCenteredRef.current && mapRef.current) {
+          mapRef.current.setView([pos.lat, pos.lng], mapRef.current.getZoom());
+          hasCenteredRef.current = true;
+        }
+      },
+      (error) => {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error("Permission to access location was denied.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error("Location information is unavailable.");
+            break;
+          case error.TIMEOUT:
+            toast.error("The request to get user location timed out.");
+            break;
+          default:
+            toast.error("An unknown geolocation error occurred.");
+            break;
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const code = codeInput.trim().toUpperCase();
+    const user = auth.currentUser;
+
+    if (!user) return toast.error('You must be logged in!');
+    if (code !== correctCode) return toast.error('Wrong code. Try again!');
+
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return toast.error('User data not found.');
+
+      const userData = userSnap.data();
+      if (userData.questOneCompleted) return toast.info('Quest already completed.');
+
+      await updateDoc(userRef, {
+        cyfCoins: increment(1),
+        questOneCompleted: true,
+      });
+
+      toast.success('You opened Secret Place 2 and earned 1 CYF Coin!');
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong. Please try again later.');
+    }
+  };
+
+  useEffect(() => {
+    if (activeIndex === 0 && mapRef.current) {
+      setTimeout(() => mapRef.current.invalidateSize(), 200);
+    }
+  }, [activeIndex]);
+
+  function ZoomControls() {
+    const map = useMap();
+    const zoomIn = () => map.setZoom(map.getZoom() + 1);
+    const zoomOut = () => map.setZoom(map.getZoom() - 1);
+
+    return (
+      <div style={{ position: "absolute", top: 10, left: 15, zIndex: 1000 }}>
+        <button className='zoom-nav' onClick={zoomIn} style={{ display: "block", marginBottom: 0 }}>
+          <HiPlusSm className='zoom-nav-icon' />
+        </button>
+        <button className='zoom-nav' onClick={zoomOut} style={{ display: "block" }}>
+          <HiMinusSm className='zoom-nav-icon' />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <section className="explore-section section">
+      <div className="quests__container container">
+        <div className="section__title features__title">
+          <span>Shapter 1</span>
+          <h1>First Quest</h1>
+        </div>
+
+        <div className="row py-5 mt-5">
+          <div className="col-lg-6 d-grid align-content-center">
+            <div className="explore-tabs-wrap p-4 pb-2 rounded-3">
+              {tabs.map((tab, index) => (
+                <div 
+                key={index} 
+                className={`explore-tabs mb-4 ${activeIndex === index ? 'active' : ''}`}
+                onClick={() => setActiveIndex(index)} 
+                style={{ cursor: 'pointer' }}
+                >
+                  <h3>
+                    <img src={tab.img} alt="Tab" className="tab-icons me-3 img-fluid" />
+                    {tab.title}
+                  </h3>
+                </div>
+              ))}
+            </div>
+              <div className="quests-warning">Keep your phone screen on to get visual and sound effects</div>
+          </div>
+
+          <div className="col-lg-6 explore-content text-white">
+            <h2 className="pb-2 text-center">{tabs[activeIndex].title}</h2>
+            <div className="explore-image" style={{ minHeight: '300px' }}>
+              {activeIndex === 0 && (
+                <MapContainer
+                  center={[secretPlace.lat, secretPlace.lng]}
+                  zoom={16}
+                  style={{ height: window.innerHeight * 0.5, width: '100%', borderRadius: '12px' }}
+                  whenCreated={map => { mapRef.current = map; }}
+                  zoomControl={false}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution="&copy; OpenStreetMap contributors"
+                  />
+                  <Marker position={[secretPlace.lat, secretPlace.lng]} />
+                  <Circle
+                    center={[secretPlace.lat, secretPlace.lng]}
+                    radius={secretPlace.radius}
+                    pathOptions={{ color: 'orange', fillColor: 'orange', fillOpacity: 0.3 }}
+                  />
+                  {userLocation && <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon} />}
+                  <AutoResizeMap mapRef={mapRef} />
+                  <ZoomControls />
+                </MapContainer>
+              )}
+
+              {tabs[activeIndex].text &&
+                <div className="tab-text p-3 bg-light text-dark rounded-3">
+                  <p>{tabs[activeIndex].text.one}</p>
+                  <p>{tabs[activeIndex].text.two}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div className="form-question">
+          <form onSubmit={handleSubmit} className="form form-quest position-relative">
+            <input 
+              type="text" 
+              value={codeInput} 
+              onChange={e => setCodeInput(e.target.value)} 
+              placeholder="Write secret code for Secret Place 2" 
+              className="form__input input__field-two" 
+            />
+
+            <div className='coins-item-unlock'>
+              <button type="submit" className="form__button button enter-btn">Enter Code</button>
+              <button 
+                className="button form__button unlock-btn" 
+                onClick={e => {
+                  e.preventDefault();
+                  unlockWithCoins(3, async () => {
+                    try {
+                      const user = auth.currentUser;
+                      if (!user) return;
+                      const userRef = doc(db, 'users', user.uid);
+                      await updateDoc(userRef, { questOneCompleted: true });
+                      onSuccess();
+                      toast.success('Secret Place 2 unlocked via coins!');
+                    } catch (err) {
+                      console.error(err);
+                      toast.error('Error unlocking quest via coins');
+                    }
+                  });
+                }}
+              >
+                Unlock Quest
+              </button> 
+            </div>
+            <p className='coins-counter'>Your coins: <span>{coins}</span></p>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default QuestOne;
+----------------------------------------------------------------------------------------------------------------------------------
+import { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
+import { auth, db } from '../../../../firebase';
+import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import useCoinUnlock from "../hooks/useCoinUnlock";
+
+/* Swiper */
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+
+import questTwoIcon from '../../../../assets/quest2-icon.png';
+
+import Maps from '../../../data/Maps.json';
+
+import { HiPlusSm } from "react-icons/hi";
+import { HiMinusSm } from "react-icons/hi";
+
+import '../quests.scss';
+
+import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+import useProximityToast from "../hooks/useProximityToast";
+
+const AutoResizeMap = ({ mapRef }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (mapRef.current) {
+      setTimeout(() => map.invalidateSize(), 200);
+    }
+  }, [map, mapRef]);
+  return null;
+};
+
+const userIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149060.png',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+});
+
+const QuestTwo = ({ onSuccess }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [codeInput, setCodeInput] = useState('');
+  const [userPosition, setUserPosition] = useState(null); // array [lat, lng]
+  const correctCode = 'CYF44009AA';
+
+  const { coins, unlockWithCoins } = useCoinUnlock();
+  const mapRef = useRef(null);
+  const watchIdRef = useRef(null);
+  const hasCenteredRef = useRef(false);
+
+  const tabs = [
+    { title: 'Map with approximate coordinates', img: questTwoIcon },
+    { 
+      title: 'Secret location description, clues, etc.', 
+      img: questTwoIcon, 
+      text: {
+        one: "Asmolov estate with an arboretum.",
+        two: "Gas annex near the cathedral serves as a coordinator of the secret place."
+      }
+    }
+  ];
+
+  const secretPlace = { lat: 50.916984, lng: 34.815197, radius: 150 };
+  useProximityToast(secretPlace, "You’ve entered the secret zone. The secret place 2 is somewhere nearby!");
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+
+    hasCenteredRef.current = false;
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const posArr = [latitude, longitude];
+        setUserPosition(posArr);
+
+        if (!hasCenteredRef.current && mapRef.current) {
+          mapRef.current.setView(posArr, mapRef.current.getZoom());
+          hasCenteredRef.current = true;
+        }
+      },
+      (err) => {
+        switch(err.code) {
+          case err.PERMISSION_DENIED:
+            toast.error("Permission to access location was denied.");
+            break;
+          case err.POSITION_UNAVAILABLE:
+            toast.error("Location information is unavailable.");
+            break;
+          case err.TIMEOUT:
+            toast.error("The request to get user location timed out.");
+            break;
+          default:
+            toast.error("An unknown geolocation error occurred.");
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const code = codeInput.trim().toUpperCase();
+    const user = auth.currentUser;
+
+    if (!user) return toast.error('You must be logged in!');
+    if (code !== correctCode) return toast.error('Wrong code. Try again!');
+
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return toast.error('User data not found.');
+
+      const userData = userSnap.data();
+      if (userData.questTwoCompleted) return toast.info('Quest already completed.');
+
+      await updateDoc(userRef, {
+        cyfCoins: increment(1),
+        questTwoCompleted: true,
+      });
+
+      toast.success('You opened Secret Location 3 and earned 1 CYF Coin!');
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong. Please try again later.');
+    }
+  };
+
+  useEffect(() => {
+    if (activeIndex === 0 && mapRef.current) {
+      setTimeout(() => mapRef.current.invalidateSize(), 200);
+    }
+  }, [activeIndex]);
+
+  function ZoomControls() {
+    const map = useMap();
+    const zoomIn = () => map.setZoom(map.getZoom() + 1);
+    const zoomOut = () => map.setZoom(map.getZoom() - 1);
+
+    return (
+      <div style={{ position: "absolute", top: 10, left: 10, zIndex: 1000 }}>
+        <button className='zoom-nav' onClick={zoomIn} style={{ display: "block", marginBottom: 0 }}><HiPlusSm className='zoom-nav-icon' /></button>
+        <button className='zoom-nav' onClick={zoomOut} style={{ display: "block" }}><HiMinusSm className='zoom-nav-icon' /></button>
+      </div>
+    );
+  }
+
+  return (
+    <section className="explore-section section">
+      <div className="quests__container container">
+        <div className="section__title features__title">
+          <span>Shapter 2</span>
+          <h1>Second Quest</h1>
+        </div>
+
+        <div className="row py-5 mt-5">
+          <div className="col-lg-6 d-grid align-content-center">
+            <div className="explore-tabs-wrap p-4 pb-2 rounded-3">
+              {tabs.map((tab, index) => (
+                <div key={index} className={`explore-tabs mb-4 ${activeIndex === index ? 'active' : ''}`}
+                onClick={() => setActiveIndex(index)} style={{ cursor: 'pointer' }}>
+                  <h3><img src={tab.img} alt="Tab" className="tab-icons me-3 img-fluid" />{tab.title}</h3>
+                </div>
+              ))}
+            </div>
+              <div className="quests-warning">Keep your phone screen on to get visual and sound effects</div>
+          </div>
+
+          <div className="col-lg-6 explore-content text-white">
+            <h2 className="pb-2 text-center">{tabs[activeIndex].title}</h2>
+            <div className="explore-image" style={{ minHeight: '300px' }}>
+              {activeIndex === 0 && (
+                <MapContainer
+                  center={[secretPlace.lat, secretPlace.lng]}
+                  zoom={16}
+                  style={{ height: window.innerHeight * 0.5, width: '100%', borderRadius: '12px' }}
+                  whenCreated={map => { mapRef.current = map; }}
+                  zoomControl={false}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution="&copy; OpenStreetMap contributors"
+                  />
+                  <Marker position={[secretPlace.lat, secretPlace.lng]} />
+                  <Circle
+                    center={[secretPlace.lat, secretPlace.lng]}
+                    radius={secretPlace.radius}
+                    pathOptions={{ color: 'orange', fillColor: 'orange', fillOpacity: 0.3 }}
+                  />
+                  {userPosition && <Marker position={userPosition} icon={userIcon} />}
+                  <AutoResizeMap mapRef={mapRef} />
+                  <ZoomControls />
+                </MapContainer>
+              )}
+
+              {tabs[activeIndex].text &&
+                <div className="tab-text p-3 bg-light text-dark rounded-3">
+                  <p>{tabs[activeIndex].text.one}</p>
+                  <p>{tabs[activeIndex].text.two}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div className="form-question">
+          <form onSubmit={handleSubmit} className="form form-quest position-relative">
+            <input type="text" value={codeInput} onChange={e => setCodeInput(e.target.value)} placeholder="Write secret code for Secret Place 3" className="form__input input__field-two" />
+
+            <div className='coins-item-unlock'>
+              <button type="submit" className="form__button button enter-btn">Enter Code</button>
+              <button className="button form__button unlock-btn" onClick={e => {
+                e.preventDefault();
+                unlockWithCoins(3, async () => {
+                  try {
+                    const user = auth.currentUser;
+                    if (!user) return;
+                    const userRef = doc(db, 'users', user.uid);
+                    await updateDoc(userRef, { questTwoCompleted: true });
+                    onSuccess();
+                    toast.success('Secret Location 3 unlocked via coins!');
+                  } catch (err) {
+                    console.error(err);
+                    toast.error('Error unlocking quest via coins');
+                  }
+                });
+              }}>Unlock Quest</button>
+            </div>
+            <p className='coins-counter'>Your coins: {coins}</p>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default QuestTwo;
+----------------------------------------------------------------------------------------------------------------------------------
+import { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
+import { auth, db } from '../../../../firebase';
+import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import useCoinUnlock from "../hooks/useCoinUnlock";
+
+/* Swiper */
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+
+import questThreeIcon from '../../../../assets/quest3-icon.png';
+
+import Maps from '../../../data/Maps.json';
+
+import { HiPlusSm } from "react-icons/hi";
+import { HiMinusSm } from "react-icons/hi";
+
+import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import useProximityToast from "../hooks/useProximityToast";
+
+import '../quests.scss';
+
+const AutoResizeMap = ({ mapRef }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (mapRef.current) {
+      setTimeout(() => map.invalidateSize(), 200);
+    }
+  }, [map, mapRef]);
+  return null;
+};
+
+const userIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149060.png',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+});
+
+const QuestThree = ({ onSuccess }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [codeInput, setCodeInput] = useState('');
+  const [userPosition, setUserPosition] = useState(null); // array [lat, lng]
+  const correctCode = 'CYF1HG7671';
+
+  const { coins, unlockWithCoins } = useCoinUnlock();
+  const mapRef = useRef(null);
+  const watchIdRef = useRef(null);
+  const hasCenteredRef = useRef(false);
+
+  const tabs = [
+    { title: 'Map with approximate coordinates', img: questThreeIcon },
+    { title: 'Secret location description, clues, etc.', img: questThreeIcon, text: {
+        one: "Friendship Square. A secret place is located in this park.",
+        two: "Fountain of Friendship. This fountain serves as a landmark of the secret place."
+      }
+    }
+  ];
+
+  const secretPlace = { lat: 50.914999, lng: 34.804279, radius: 150 };
+  useProximityToast(secretPlace, "You’ve entered the secret zone. The secret place 3 is somewhere nearby!");
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+
+    hasCenteredRef.current = false;
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const posArr = [latitude, longitude];
+        setUserPosition(posArr);
+
+        if (!hasCenteredRef.current && mapRef.current) {
+          mapRef.current.setView(posArr, mapRef.current.getZoom());
+          hasCenteredRef.current = true;
+        }
+      },
+      (err) => {
+        switch(err.code) {
+          case err.PERMISSION_DENIED:
+            toast.error("Permission to access location was denied.");
+            break;
+          case err.POSITION_UNAVAILABLE:
+            toast.error("Location information is unavailable.");
+            break;
+          case err.TIMEOUT:
+            toast.error("The request to get user location timed out.");
+            break;
+          default:
+            toast.error("An unknown geolocation error occurred.");
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const code = codeInput.trim().toUpperCase();
+    const user = auth.currentUser;
+
+    if (!user) return toast.error('You must be logged in!');
+    if (code !== correctCode) return toast.error('Wrong code. Try again!');
+
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return toast.error('User data not found.');
+
+      const userData = userSnap.data();
+      if (userData.questThreeCompleted) return toast.info('Quest already completed.');
+
+      await updateDoc(userRef, {
+        cyfCoins: increment(1),
+        questThreeCompleted: true,
+      });
+
+      toast.success('You opened the final location and earned 1 CYF Coin!');
+      toast.success('All quests completed! Congratulations!');
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong. Please try again later.');
+    }
+  };
+
+  useEffect(() => {
+    if (activeIndex === 0 && mapRef.current) {
+      setTimeout(() => mapRef.current.invalidateSize(), 200);
+    }
+  }, [activeIndex]);
+
+  function ZoomControls() {
+    const map = useMap();
+    const zoomIn = () => map.setZoom(map.getZoom() + 1);
+    const zoomOut = () => map.setZoom(map.getZoom() - 1);
+
+    return (
+      <div style={{ position: "absolute", top: 10, left: 10, zIndex: 1000 }}>
+        <button className='zoom-nav' onClick={zoomIn} style={{ display: "block", marginBottom: 0 }}><HiPlusSm className='zoom-nav-icon' /></button>
+        <button className='zoom-nav' onClick={zoomOut} style={{ display: "block" }}><HiMinusSm className='zoom-nav-icon' /></button>
+      </div>
+    );
+  }
+
+  return (
+    <section className="explore-section section">
+      <div className="quests__container container">
+        <div className="section__title features__title">
+          <span>Shapter 3</span>
+          <h1>Final Quest</h1>
+        </div>
+
+        <div className="row py-5 mt-5">
+          <div className="col-lg-6 d-grid align-content-center">
+            <div className="explore-tabs-wrap p-4 pb-2 rounded-3">
+              {tabs.map((tab, index) => (
+                <div key={index} className={`explore-tabs mb-4 ${activeIndex === index ? 'active' : ''}`}
+                onClick={() => setActiveIndex(index)} style={{ cursor: 'pointer' }}>
+                  <h3><img src={tab.img} alt="Tab" className="tab-icons me-3 img-fluid" />{tab.title}</h3>
+                </div>
+              ))}
+            </div>
+              <div className="quests-warning">Keep your phone screen on to get visual and sound effects</div>
+          </div>
+
+          <div className="col-lg-6 explore-content text-white">
+            <h2 className="pb-2 text-center">{tabs[activeIndex].title}</h2>
+            <div className="explore-image" style={{ minHeight: '300px' }}>
+              {activeIndex === 0 && (
+                <MapContainer
+                  center={[secretPlace.lat, secretPlace.lng]}
+                  zoom={16}
+                  style={{ height: window.innerHeight * 0.5, width: '100%', borderRadius: '12px' }}
+                  whenCreated={map => { mapRef.current = map; }}
+                  zoomControl={false}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution="&copy; OpenStreetMap contributors"
+                  />
+                  <Marker position={[secretPlace.lat, secretPlace.lng]} />
+                  <Circle
+                    center={[secretPlace.lat, secretPlace.lng]}
+                    radius={secretPlace.radius}
+                    pathOptions={{ color: 'orange', fillColor: 'orange', fillOpacity: 0.3 }}
+                  />
+                  {userPosition && <Marker position={userPosition} icon={userIcon} />}
+                  <AutoResizeMap mapRef={mapRef} />
+                  <ZoomControls />
+                </MapContainer>
+              )}
+
+              {tabs[activeIndex].text &&
+                <div className="tab-text p-3 bg-light text-dark rounded-3">
+                  <p>{tabs[activeIndex].text.one}</p>
+                  <p>{tabs[activeIndex].text.two}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div className="form-question">
+          <form onSubmit={handleSubmit} className="form form-quest position-relative">
+            <input type="text" value={codeInput} onChange={e => setCodeInput(e.target.value)} placeholder="Write final secret code" className="form__input input__field-two" />
+
+            <div className='coins-item-unlock'>
+              <button type="submit" className="form__button button enter-btn">Enter Code</button>
+              <button className="button form__button unlock-btn" onClick={e => {
+                e.preventDefault();
+                unlockWithCoins(3, async () => {
+                  try {
+                    const user = auth.currentUser;
+                    if (!user) return;
+                    const userRef = doc(db, 'users', user.uid);
+                    await updateDoc(userRef, { questThreeCompleted: true });
+                    onSuccess();
+                    toast.success('Final location unlocked via coins!');
+                  } catch (err) {
+                    console.error(err);
+                    toast.error('Error unlocking quest via coins');
+                  }
+                });
+              }}>Unlock Quest</button>
+            </div>
+            <p className='coins-counter'>Your coins: {coins}</p>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default QuestThree;

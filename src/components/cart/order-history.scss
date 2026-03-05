@@ -1,0 +1,40 @@
+.order-history {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  .order-history-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    user-select: none;
+    cursor: pointer;
+    color: #fd5200;
+    display: inline-flex;
+    align-items: center;
+
+    .arrow {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-left: 12px;
+      margin-bottom: 5px;
+      border-right: 2px solid #fd5200;
+      border-bottom: 2px solid #fd5200;
+      transform: rotate(45deg);
+      transition: transform 0.3s ease;
+
+      &.open {
+        transform: rotate(-135deg);
+              margin-bottom: -5px;
+      }
+    }
+
+    &:hover {
+      color: #ff7b3d;
+
+      .arrow {
+        border-color: #ff7b3d;
+      }
+    }
+  }
+}

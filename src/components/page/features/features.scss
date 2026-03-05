@@ -1,0 +1,107 @@
+.features {
+  background-color: #131325;
+  border-radius: 20px;
+  padding-top: 60px !important;
+  padding-bottom: 60px !important;
+  margin: 0;
+
+  &__main {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+  }
+  &__title {
+    text-align: left;
+    color: #ffffff8b;
+    span {
+      color: #fd5200;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    h1 {
+      color: #fff;
+      font-size: 60.8px;
+      margin: 10px 0 20px;
+    }
+    p {
+      color: #ffffff8b;
+      line-height: 1.6;
+      margin: 8px 0;
+    }
+  }
+  &__accordion {
+    display: flex;
+    flex-direction: column;
+    max-width: 650px;
+    gap: 25px;
+    .features__item {
+      background-color: #25283d37;
+      border-radius: 15px;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      .features__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        padding: 35px 20px;
+        gap: 15px;
+        transition: background 0.3s;
+        h2 {
+          flex-grow: 1;
+          color: #fff;
+          font-size: 1.2rem;
+          margin: 0;
+        }
+      }
+      .features__content {
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        padding: 0 20px;
+        p {
+          color: #ffffff8b;
+          font-size: 1rem;
+          line-height: 1.6;
+        }
+      }
+      &.open .features__content {
+        max-height: 500px;
+        padding-bottom: 20px;
+      }
+    }
+  }
+  @media (max-width: 768px) {
+    padding: 40px 15px;
+    .features__header h2 {
+      font-size: 1rem;
+    }
+    .features__header .icon {
+      width: 35px;
+      height: 35px;
+      font-size: 18px;
+    }
+    .features__content p {
+      font-size: 0.9rem;
+    }
+  }
+  @media (max-width: 480px) {
+    padding: 30px 10px;
+    .features__header {
+      padding: 12px 15px;
+      gap: 10px;
+    }
+    .features__header h2 {
+      font-size: 0.95rem;
+    }
+    .features__content p {
+      font-size: 0.85rem;
+    }
+  }
+}
+.arrow-about {
+    fill: var(--primary-color) !important;
+    font-size: 1.3rem;
+}

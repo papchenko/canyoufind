@@ -1,0 +1,22 @@
+.about {
+  &img {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      animation: none;
+      background-size: 100%;
+      background-position: bottom;
+    }
+  }
+}
+.rules-img {
+  max-width: 530px;
+}
+.warning-img {
+  width: 100%;
+  animation: warningPulse 8s ease-in-out infinite;
+  transform-origin: center;
+}

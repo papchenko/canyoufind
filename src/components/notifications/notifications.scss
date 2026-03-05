@@ -1,0 +1,113 @@
+.notifications-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9998;
+  backdrop-filter: blur(4px);
+}
+
+.notifications-panel {
+  background: #fdfdfd;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  padding: 25px;
+  width: 400px;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 9999;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+
+  .title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #333;
+  }
+}
+
+.notifications-body {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding-right: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: #598392 #eaeaea;
+}
+
+.notifications-body::-webkit-scrollbar {
+  width: 6px;
+}
+.notifications-body::-webkit-scrollbar-thumb {
+  background: #598392;
+  border-radius: 4px;
+}
+
+.notifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+
+//   &:hover {
+//     transform: translateY(-2px);
+//     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+//   }
+
+//   &.unread {
+//     border-left: 4px solid var(--third-color);
+//   }
+
+  &.read {
+    opacity: 0.7;
+  }
+
+  .notification-message {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--third-color);
+    margin-bottom: 4px;
+  }
+  
+  .notification-time {
+    color: #333;
+    font-size: 0.75rem;
+    text-align: right;
+  }
+}
+.vh {
+  visibility: hidden;
+}

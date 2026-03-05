@@ -1,0 +1,48 @@
+.final-form {
+    row-gap: 1.25rem;
+    position: relative;
+    padding: 20px;
+    border-radius: 20px;
+}
+.final-form-group {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+.final-form-div {
+    display: grid;
+    row-gap: 0.3rem;
+}
+.final-form-label {
+    padding-block: 5px;
+}
+.final-form-input {
+    background-color: var(--container-color);
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--secondary-color);
+}
+.final-form-area {
+    resize: none;
+    height: 200px;
+    border-radius: 0.5rem;
+}
+.final-button {
+    justify-self: flex-end;
+    margin-top: 1.2rem;
+}
+.final-message {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 4.6rem;
+}
+.color-red {
+    color: #ef233c;
+}
+.btn-send-mail {
+    background: var(--primary-color);
+}
+.final-subscribe {
+    background-color: #ffffff19;
+    padding: 20px 10px;
+    margin-top: 30px;
+    border-radius: 10px;
+}
