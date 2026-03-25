@@ -11,7 +11,7 @@ import Coins from "./components/page/coinspremium/Coins";
 import Premium from "./components/page/coinspremium/Premium";
 import Features from "./components/page/features/Features";
 import Collections from "./components/page/collections/Collections";
-import Banner from "./components/page/banner/Banner";
+import BuyPremiumAccount from "./components/page/premium-account/BuyPremiumAccount";
 import Testimonial from "./components/page/testimonial/Testimonial";
 import Footer from "./components/footer/Footer";
 import CYF from "./components/cyf/CYF";
@@ -25,6 +25,7 @@ import { NotificationsProvider } from "./context/NotificationsContext";
 import { CartProvider } from "./context/CartContext";
 import Checkout from "./components/cart/Checkout";
 import PaymentFlow from "./components/payment/PaymentFlow";
+import PaymentPremium from "./components/payment/PaymentPremium";
 
 import "./App.scss";
 
@@ -56,7 +57,7 @@ const App = () => {
                   <Coins />
                   <Premium />
                   <Collections />
-                  <Banner />
+                  <BuyPremiumAccount />
                   <Testimonial />
                   <Footer />
                 </>
@@ -68,6 +69,7 @@ const App = () => {
             <Route path="/notification-panel" element={ <ProtectedAdminRoute><AdminPanel /></ProtectedAdminRoute> } />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/payment" element={<PaymentFlow />} />
+            <Route path="/premium-payment" element={<PaymentPremium />} />
             
           </Routes>
 

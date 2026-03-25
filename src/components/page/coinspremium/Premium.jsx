@@ -16,21 +16,21 @@ const Premium = () => {
   const premiumPlans = [
     {
       id: "premium-starter",
-      name: "Premium Starter",
+      name: "Starter",
       coins: 3,
       price: 150,
       img: starterImg,
     },
     {
       id: "premium-hero",
-      name: "Premium Hero",
+      name: "Hero",
       coins: 7,
       price: 270,
       img: heroImg,
     },
     {
       id: "premium-legend",
-      name: "Premium Legend",
+      name: "Legend",
       coins: 10,
       price: 320,
       img: legendImg,
@@ -63,19 +63,19 @@ const Premium = () => {
     <div className="premium section" id="coinspremium">
       <div className="about__title section__title">
         <Animation fadeOnly duration={0.8} delay={0.2}>
-          <span>Premium</span>
+          <span>Coin Shop</span>
         </Animation>
         <Animation direction="up" duration={0.8} delay={0.2}>
-          <h1>Be Premium - be ahead!</h1>
+          <h1>Buy Coins - be ahead!</h1>
         </Animation>
         <div className="rules__text-wrapper">
           <Animation direction="up" duration={0.8} delay={0.3}>
             <p>
-              Once you have purchased Premium, new coins will be credited to your account.
+              After purchase, new coins will be credited to your account.
             </p>
           </Animation>
           <Animation direction="up" duration={0.8} delay={0.5}>
-            <p>Choose your subscription option.</p>
+            <p>Select the option to purchase coins.</p>
           </Animation>
         </div>
       </div>
@@ -98,7 +98,7 @@ const Premium = () => {
             className="btn btn-unactive puls-anim"
             onClick={() => setShowPopup(true)}
           >
-            Get Premium
+            Buy Coins
           </button>
         </div>
       </div>
@@ -110,7 +110,7 @@ const Premium = () => {
             className="premium-popup"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3>Select Your Premium Plan</h3>
+            <h3>Choose a coin purchase package</h3>
             <ul className="premium-list">
               {premiumPlans.map((plan) => (
                 <li key={plan.id} className="premium-option">

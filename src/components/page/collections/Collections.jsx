@@ -49,7 +49,7 @@ const Collections = () => {
     <div className="collections section" id='shop'>
       <div className="section__title collections__title">
         <Animation fadeOnly duration={0.8} delay={0.2}>
-          <span>Our Shop</span>
+          <span>A Shop Of Things</span>
         </Animation>
         <Animation direction="up" duration={0.8} delay={0.2}>
           <h1>Stunning collection of branded things</h1>

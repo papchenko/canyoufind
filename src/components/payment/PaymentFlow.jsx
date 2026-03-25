@@ -100,7 +100,7 @@ const PaymentFlow = () => {
     const emailData = {
       ...formData,
       orderNumber,
-      message: `🧾 New order Canyoufind!\n\nOrder: ${orderNumber}\nTotal: ${total}₴\n\nCustomer: ${
+      message: `New order Canyoufind!\n\nOrder: ${orderNumber}\nTotal: ${total}₴\n\nCustomer: ${
         formData.lastName
       } ${formData.firstName}\n${
         cart.some((i) => !String(i.id).startsWith("premium-"))
@@ -129,7 +129,7 @@ const PaymentFlow = () => {
         });
       }
 
-      toast.success("✅ Order received! Wait for shipment 🚚");
+      toast.success("Order received! Wait for shipment");
       clearCart();
       localStorage.removeItem("paymentStep");
       setStep(3);
@@ -320,7 +320,7 @@ const PaymentFlow = () => {
             >
               mandatory condition for payment!
             </p>
-            <p className="m-0 w-100 text-center">In payment description, enter order number and time of payment{orderNumber}</p>
+            <p className="m-0 w-100 text-center">In payment description, enter order number and time of payment {orderNumber}</p>
           </div>
           <button
             className="btn btn-pay mt-3 p-1"

@@ -399,13 +399,24 @@ const avatarUrl = useUserAvatar();
                   Please log in to start the registration!
                 </p>
               ) : (
-                <button
-                  className="btn btn-mode btn-centered"
-                  onClick={handleRegister}
-                  disabled={players.length >= MAX_PLAYERS}
-                >
-                  Register Me !
-                </button>
+                <>
+                {userData?.["premium-account"] ? (
+                  <button
+                    className="btn btn-mode btn-centered"
+                    onClick={handleRegister}
+                    disabled={players.length >= MAX_PLAYERS}
+                  >
+                    Register Me !
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-mode btn-centered"
+                    onClick={() => toast.info("This feature is available for premium users only!")}
+                  >
+                    Register Me !
+                  </button>
+                )}
+                </>
               )
             )
             )}

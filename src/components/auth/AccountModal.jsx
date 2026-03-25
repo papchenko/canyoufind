@@ -29,6 +29,9 @@ export default function AccountModal({ id = "dashboardModal" }) {
   const [canChangeName, setCanChangeName] = useState(true);
   const [daysLeftName, setDaysLeftName] = useState(0);
 
+  const [isPremium, setIsPremium] = useState(false);
+  const [premiumExpiresAt, setPremiumExpiresAt] = useState(null);
+
   const hideModal = (modalId) => {
     const el = document.getElementById(modalId);
     const instance =
@@ -94,6 +97,17 @@ export default function AccountModal({ id = "dashboardModal" }) {
         } else {
           setCanChangeName(true);
           setDaysLeftName(0);
+        }
+        if (data["premium-account"] && data.premiumExpiresAt) {
+          const expires = data.premiumExpiresAt.toDate
+            ? data.premiumExpiresAt.toDate()
+            : new Date(data.premiumExpiresAt);
+
+          setPremiumExpiresAt(expires);
+          setIsPremium(expires > new Date());
+        } else {
+          setIsPremium(false);
+          setPremiumExpiresAt(null);
         }
       }
     });
@@ -181,6 +195,15 @@ export default function AccountModal({ id = "dashboardModal" }) {
       console.error(err);
       toast.error("Failed to update username.");
     }
+  };
+
+  const getPremiumDaysLeft = () => {
+    if (!premiumExpiresAt) return 0;
+
+    const diffMs = premiumExpiresAt - new Date();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    return diffDays > 0 ? diffDays : 0;
   };
 
   return (
@@ -284,6 +307,12 @@ export default function AccountModal({ id = "dashboardModal" }) {
             <p className="text-dark">
               You have <span className="cyf-coins">{cyfCoins}</span> CYF Coins.
             </p>
+
+            {isPremium && (
+              <p className="text-warning fw-bold">
+                Premium Active — {getPremiumDaysLeft()} day(s) left
+              </p>
+            )}
 
             <div className="quests-status mt-3">
               <div className="season-progress mt-2">

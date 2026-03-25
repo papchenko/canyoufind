@@ -428,10 +428,10 @@ const Nav = ({ onToggleNotifications }) => {
             <div className="nav-dropdown-bar d-flex align-items-center justify-content-center">
               <div className="inner version-body">
                 <p className="fw-semibold fs-4" style={{ color: "#fd5200" }}>
-                  Stable version 4.2.0
+                  Stable version 5.1.1
                 </p>
                 <p className="text-white fw-semibold fs-7">
-                  Release 29_110
+                  Release 30_555
                 </p>
                 <div className="version-descriptions">
                   <span style={{ fontSize: "0.7rem", opacity: "0.6" }}>
@@ -479,7 +479,11 @@ const Nav = ({ onToggleNotifications }) => {
                   </span>
                   <br />
                   <span style={{ fontSize: "0.7rem", opacity: "0.6" }}>
-                    4.2.0 Premium is now available for orders.
+                    4.2.0 CYFCoin purchase is now available for orders.
+                  </span>
+                  <br />
+                  <span style={{ fontSize: "0.7rem", opacity: "0.6" }}>
+                    5.1.1 Premium is now available for orders. Some game modes are now only available after purchasing a premium subscription.
                   </span>
                 </div>
               </div>

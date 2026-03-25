@@ -8,7 +8,7 @@ export const useSeason = () => useContext(SeasonContext);
 
 export const SeasonProvider = ({ children }) => {
   const [spam] = useState("Season");
-  const [r, setR] = useState("Autumn mysticism");
+  const [r, setR] = useState("Mysterious places");
 
   const season = `${spam} ${r}`;
 

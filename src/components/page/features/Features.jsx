@@ -33,10 +33,10 @@ const Features = () => {
       <div className="features__main">
         <div className="features__title section__title">
           <Animation fadeOnly duration={0.8} delay={0.2}>
-          <span>About</span>
+          <span>How It Works</span>
           </Animation>
           <Animation direction="up" duration={0.8} delay={0.2}>
-          <h1>How It Works</h1>
+          <h1>A short guide to our play space</h1>
           </Animation>
           <div>
           <Animation direction="up" duration={0.8} delay={0.3}>

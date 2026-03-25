@@ -289,9 +289,20 @@ const GravityAnomalies = () => {
           cooldown > 0 ? (
             <p>The field is locked! It will be available again in: {formatTime(cooldown)}</p>
           ) : timeLeft <= 0 ? (
-            <button onClick={() => setShowRules(true)} className="btn btn-mode">
-              Go Gravity!
-            </button>
+              <>
+              {userData?.["premium-account"] ? (
+              <button onClick={() => setShowRules(true)} className="btn btn-mode">
+                Go Gravity!
+              </button>
+            ) : (
+              <button
+                className="btn btn-mode"
+                onClick={() => toast.info("This feature is available for premium users only!")}
+              >
+                Go Gravity!
+              </button>
+            )}
+              </>
           ) : null
         ) : (
           <p className="puls-anim" style={{ color: "#fb8500", fontWeight: "bold" }}>
