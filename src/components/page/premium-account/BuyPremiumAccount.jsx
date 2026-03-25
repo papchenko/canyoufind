@@ -44,7 +44,7 @@ const BuyPremiumAccount = () => {
     <div className="banner section">
       <div className="banner__main">
         <div className="banner__text">
-          <h1 className="fs-1" style={{ color: "#fff" }}>Unlock Premium</h1>
+          <h1 className="fs-1 fw-bold" style={{ color: "#fff" }}>Unlock Premium</h1>
           <div className="section__title w-100">
             <p className="m-0 fs-5">Purchase a premium account for 30 days and get full access to all game modes.</p>
             <p className="m-0 fs-5">After purchasing Premium, it will be activated in your account.</p>
